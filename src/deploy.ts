@@ -28,11 +28,6 @@ export type ErrorResult = {
   error: string;
 };
 
-export type ChannelSuccessResult = {
-  status: "success";
-  result: { [key: string]: SiteDeploy };
-};
-
 export type ProductionSuccessResult = {
   status: "success";
   result: {
@@ -40,32 +35,11 @@ export type ProductionSuccessResult = {
   };
 };
 
-export type DeployConfig = {
-  projectId: string;
-  expires: string;
-  channelId: string;
-  target?: string;
-};
-
 export type ProductionDeployConfig = {
   services?: string;
   projectId: string;
   target?: string;
 };
-
-export function interpretChannelDeployResult(
-  deployResult: ChannelSuccessResult
-): { expireTime: string; urls: string[] } {
-  const allSiteResults = Object.values(deployResult.result);
-
-  const expireTime = allSiteResults[0].expireTime;
-  const urls = allSiteResults.map((siteResult) => siteResult.url);
-
-  return {
-    expireTime,
-    urls,
-  };
-}
 
 async function execWithCredentials(
   args: string[],
@@ -117,42 +91,14 @@ async function execWithCredentials(
     : ""; // output from the CLI
 }
 
-export async function deployPreview(
-  gacFilename: string,
-  deployConfig: DeployConfig
-) {
-  const { projectId, channelId, target, expires } = deployConfig;
-
-  const deploymentText = await execWithCredentials(
-    [
-      "hosting:channel:deploy",
-      channelId,
-      ...(target ? ["--only", target] : []),
-      ...(expires ? ["--expires", expires] : []),
-    ],
-    projectId,
-    gacFilename
-  );
-
-  const deploymentResult = JSON.parse(deploymentText.trim()) as
-    | ChannelSuccessResult
-    | ErrorResult;
-
-  return deploymentResult;
-}
-
 export async function deployProductionSite(
   gacFilename,
   productionDeployConfig: ProductionDeployConfig
 ) {
-  const { services, projectId, target } = productionDeployConfig;
+  const { projectId } = productionDeployConfig;
 
   const deploymentText = await execWithCredentials(
-    [
-      "deploy",
-      "--only",
-      `hosting${target ? ":" + target : ""}${services ? "," + services : ""}`,
-    ],
+    ["deploy", "--only", `functions`],
     projectId,
     gacFilename
   );
