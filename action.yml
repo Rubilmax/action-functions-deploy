@@ -22,6 +22,9 @@ runs:
   using: "node12"
   main: "bin/action.min.js"
 inputs:
+  repoToken:
+    description: "The GITHUB_TOKEN secret"
+    required: false
   firebaseServiceAccount:
     description: "Firebase service account JSON"
     required: true
